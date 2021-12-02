@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { cryptoWaitReady, decodeAddress, signatureVerify } from '@polkadot/util-crypto';
+// import { cryptoWaitReady, decodeAddress, signatureVerify } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
 const keyPublicKey = "polkadotKey";
@@ -17,20 +17,20 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   console.log(`${polkadotPublicKey}: ${evmAddr}: ${sign}`)
 
   let result = false;
-  if(polkadotPublicKey && typeof polkadotPublicKey === "string" && evmAddr && typeof evmAddr === "string" && sign && typeof sign === "string"){
-    await cryptoWaitReady();
-    result = isValidSignature(evmAddr, sign, polkadotPublicKey);
-  }
+  // if(polkadotPublicKey && typeof polkadotPublicKey === "string" && evmAddr && typeof evmAddr === "string" && sign && typeof sign === "string"){
+  //   await cryptoWaitReady();
+  //   result = isValidSignature(evmAddr, sign, polkadotPublicKey);
+  // }
   return response.status(200).send(result);
 };
 
-const isValidSignature = (signedMessage:string, signature:string, polkadotPubKey:string) => {
-  try {
-    const publicKey = decodeAddress(polkadotPubKey);
-    const hexPublicKey = u8aToHex(publicKey);
-    return signatureVerify(signedMessage, signature, hexPublicKey).isValid; 
-  } catch (error) {
-    console.error(error)
-    return false;
-  }
-};
+// const isValidSignature = (signedMessage:string, signature:string, polkadotPubKey:string) => {
+//   try {
+//     const publicKey = decodeAddress(polkadotPubKey);
+//     const hexPublicKey = u8aToHex(publicKey);
+//     return signatureVerify(signedMessage, signature, hexPublicKey).isValid; 
+//   } catch (error) {
+//     console.error(error)
+//     return false;
+//   }
+// };
