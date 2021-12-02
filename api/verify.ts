@@ -24,7 +24,7 @@ export default async (request: VercelRequest, response: VercelResponse) => {
     await cryptoWaitReady();
     result.isValidSign = isValidSignature(evmAddr, sign, polkadotPublicKey);
     if(result.isValidSign){
-      result.publicKey = decodeAddress(polkadotPublicKey).toString();
+      result.publicKey = Buffer.from(decodeAddress(polkadotPublicKey)).toString('hex');
     }
   }
   return response.status(200).json(result);
