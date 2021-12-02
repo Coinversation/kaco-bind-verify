@@ -2,10 +2,6 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { cryptoWaitReady, decodeAddress, signatureVerify } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
-const testPublicAddr = "WuCxWAfuWgGRY6oEABmjorBWAxVjFCEBcaEAAV4cenijcbr";
-const testEvmAddr = "0xFB83a67784F110dC658B19515308A7a95c2bA33A";
-const testSign = "0x96644fa61dce77339b7b07ff49feec44075242f26d5d83d1820c0a055b47087d33b20082ae094cea6d64cd4bb74da18a17c7f3c3f4226de4313e1bbe97e1c983";
-
 const keyPublicKey = "polkadotKey";
 const keyEvmAddr = "evmAddress";
 const keySign = "signature";
@@ -18,7 +14,7 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   const polkadotPublicKey = request.query[keyPublicKey];
   const evmAddr = request.query[keyEvmAddr];
   const sign = request.query[keySign];
-  // console.log(`${publicAddr}: ${evmAddr}: ${sign}`)
+  console.log(`${polkadotPublicKey}: ${evmAddr}: ${sign}`)
 
   let result = false;
   if(polkadotPublicKey && typeof polkadotPublicKey === "string" && evmAddr && typeof evmAddr === "string" && sign && typeof sign === "string"){
