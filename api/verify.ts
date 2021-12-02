@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 // import { cryptoWaitReady, decodeAddress, signatureVerify } from '@polkadot/util-crypto';
-import { u8aToHex } from '@polkadot/util';
+// import { u8aToHex } from '@polkadot/util';
 
 const keyPublicKey = "polkadotKey";
 const keyEvmAddr = "evmAddress";
@@ -8,7 +8,7 @@ const keySign = "signature";
 
 export default async (request: VercelRequest, response: VercelResponse) => {
   if(request.headers.authorization !== `Bearer ${process.env.VERCEL_TOKEN}`){
-    return response.status(401)
+    return response.status(401).send("invalid token");
   }
   //get params from request
   const polkadotPublicKey = request.query[keyPublicKey];
