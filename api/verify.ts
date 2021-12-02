@@ -8,7 +8,7 @@ const keySign = "signature";
 
 export default async (request: VercelRequest, response: VercelResponse) => {
   if(request.headers.authorization !== `Bearer ${process.env.VERCEL_TOKEN}`){
-    return response.status(401).send("invalid token.")
+    return response.status(401).json({isValidResult: false})
   }
   //get params from request
   const polkadotPublicKey = request.query[keyPublicKey];
@@ -16,12 +16,18 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   const sign = request.query[keySign];
   console.log(`${polkadotPublicKey}: ${evmAddr}: ${sign}`)
 
-  let result = false;
+  let result:VercelResult = {
+    isValidResult: true,
+    isValidSign: false
+  };
   if(polkadotPublicKey && typeof polkadotPublicKey === "string" && evmAddr && typeof evmAddr === "string" && sign && typeof sign === "string"){
     await cryptoWaitReady();
-    result = isValidSignature(evmAddr, sign, polkadotPublicKey);
+    result.isValidSign = isValidSignature(evmAddr, sign, polkadotPublicKey);
+    if(result.isValidSign){
+      result.publicKey = decodeAddress(polkadotPublicKey).toString();
+    }
   }
-  return response.status(200).send(result);
+  return response.status(200).json(result);
 };
 
 const isValidSignature = (signedMessage:string, signature:string, polkadotPubKey:string) => {
@@ -34,3 +40,9 @@ const isValidSignature = (signedMessage:string, signature:string, polkadotPubKey
     return false;
   }
 };
+
+interface VercelResult{
+  isValidResult: boolean;
+  isValidSign?: boolean;
+  publicKey?: string;
+}
