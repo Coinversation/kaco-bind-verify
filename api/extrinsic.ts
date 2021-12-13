@@ -7,12 +7,18 @@ var api:ApiPromise;
 var signedBlock:SignedBlock;
 
 export default async (request: VercelRequest, response: VercelResponse) => {
+
+  const blockHash = request.query["blockHash"];
+  const extrinsicHash = request.query["extrinsicHash"];
+  console.log(`${blockHash}: ${extrinsicHash}`);
+
   // Construct
   const wsProvider = new WsProvider('wss://rpc.polkadot.io');
   api = await ApiPromise.create({ provider: wsProvider });
   
-  await extractValue("0x89b2e12bd8d1e9815ccc4ef6b14d41b1756d40a1f447b1744bd4189bc3bf6b5f",
-    "0xb834bff0dfb765693ca5ce171b20a39ff0474f9b3b21e102071aa94fb75b1e55");
+  if(blockHash && typeof blockHash === "string" && extrinsicHash && extrinsicHash === "string"){
+    await extractValue(blockHash, extrinsicHash);
+  }
 
   return response;
 }
