@@ -16,14 +16,15 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   const wsProvider = new WsProvider('wss://rpc.polkadot.io');
   api = await ApiPromise.create({ provider: wsProvider });
   
+  let data:string;
   if(blockHash && typeof blockHash === "string" && extrinsicHash && typeof extrinsicHash === "string"){
-    await extractValue(blockHash, extrinsicHash);
+    data = await extractValue(blockHash, extrinsicHash);
   }
 
-  return response.status(200).json({ok: true, data: `${blockHash}: ${extrinsicHash}`});
+  return response.status(200).json({ok: true, data: `${data}`});
 }
 
-async function extractValue(blockHash: string, extrinsicHash: string): Promise<number> { 
+async function extractValue(blockHash: string, extrinsicHash: string): Promise<string> { 
 
   // no blockHash is specified, so we retrieve the latest
   signedBlock = await api.rpc.chain.getBlock(blockHash);
@@ -36,7 +37,7 @@ async function extractValue(blockHash: string, extrinsicHash: string): Promise<n
     extrinsicIndex = index;
   })
   if(!theExtrinsic || !theExtrinsic.isSigned){
-    return 0;
+    return "0";
   }
 
   // map between the extrinsics and events
@@ -77,11 +78,10 @@ async function extractValue(blockHash: string, extrinsicHash: string): Promise<n
       }
     });
 
-    console.log("method: " + theExtrinsic.method.toJSON());
-    console.log("signer: " + theExtrinsic.signer.toString())
-    console.log("args: " + theExtrinsic.args.toString());
-    
-    return 0;
+  
+    return "method: " + theExtrinsic.method.toJSON() + 
+    "signer: " + theExtrinsic.signer.toString() + 
+    "args: " + theExtrinsic.args.toString();
 }
 
 
