@@ -32,6 +32,7 @@ async function extractValue(blockHash: string, extrinsicHash: string): Promise<V
       data.msg = "can not get block: " + blockHash;
       return data;
     }
+    data.blockNum = Number(signedBlock.block.header.number.toBigInt());
     
     let extrinsicIndex:number;
     const theExtrinsic = signedBlock.block.extrinsics.find((extrinsic, index) => {
@@ -103,6 +104,7 @@ async function extractValue(blockHash: string, extrinsicHash: string): Promise<V
     msg?: string;
     value?: number;
     publicKey?: string;
+    blockNum?: number;
   }
   
 
