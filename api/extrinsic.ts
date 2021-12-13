@@ -2,12 +2,12 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
+import { decodeAddress } from "@polkadot/util-crypto";
 
 var api:ApiPromise;
 var signedBlock:SignedBlock;
 
 export default async (request: VercelRequest, response: VercelResponse) => {
-
   const blockHash = request.query["blockHash"];
   const extrinsicHash = request.query["extrinsicHash"];
   console.log(`${blockHash}: ${extrinsicHash}`);
@@ -16,30 +16,39 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   const wsProvider = new WsProvider('wss://rpc.polkadot.io');
   api = await ApiPromise.create({ provider: wsProvider });
   
-  let data:string;
+  let data:VercelResult;
   if(blockHash && typeof blockHash === "string" && extrinsicHash && typeof extrinsicHash === "string"){
     data = await extractValue(blockHash, extrinsicHash);
   }
 
-  return response.status(200).json({ok: true, data: `${data}`});
+  return response.status(200).json(data);
 }
 
-async function extractValue(blockHash: string, extrinsicHash: string): Promise<string> { 
+async function extractValue(blockHash: string, extrinsicHash: string): Promise<VercelResult> { 
+  const data:VercelResult = {ok:false};
 
   // no blockHash is specified, so we retrieve the latest
   signedBlock = await api.rpc.chain.getBlock(blockHash);
-  const allRecords = await api.query.system.events.at(signedBlock.block.header.hash);
-  // allRecords = await api.at(blockHash);
-
+  if(!signedBlock){
+    data.msg = "can't get block: " + blockHash;
+    return data;
+  }
+  
   let extrinsicIndex:number;
   const theExtrinsic = signedBlock.block.extrinsics.find((extrinsic, index) => {
-    extrinsic.hash.eq(extrinsicHash);
-    extrinsicIndex = index;
+    if(extrinsic.hash.eq(extrinsicHash)){
+      extrinsicIndex = index;
+      return true;
+    }else{
+      return false;
+    }
   })
   if(!theExtrinsic || !theExtrinsic.isSigned){
-    return "0";
+    data.msg = "can't get signed extrinsic: " + extrinsicHash;
+    return data;
   }
 
+  const allRecords = await api.query.system.events.at(signedBlock.block.header.hash);
   // map between the extrinsics and events
   allRecords
     // filter the specific events based on the phase and then the
@@ -55,7 +64,15 @@ async function extractValue(blockHash: string, extrinsicHash: string): Promise<s
         // (In TS, because of the guard above, these will be typed)
         const [dispatchInfo] = event.data;
 
-        console.log(`${theExtrinsic.method.section}.${theExtrinsic.method.method}:: ExtrinsicSuccess:: ${dispatchInfo.toHuman()}`);
+        const args = theExtrinsic.args;
+        if(parseInt(args[0].toString()) === 2017){
+          data.ok = true;
+          data.publicKey = "0x" + Buffer.from(decodeAddress(theExtrinsic.signer.toString())).toString("hex");
+          data.value = parseInt(args[1].toString());
+        }else{
+          data.msg = "invalid chainId: " + parseInt(args[0].toString());
+        }
+        // console.log(`${theExtrinsic.method.section}.${theExtrinsic.method.method}:: ExtrinsicSuccess:: ${dispatchInfo.toHuman()}`);
       } else if (api.events.system.ExtrinsicFailed.is(event)) {
         // extract the data for this event
         const [dispatchError, dispatchInfo] = event.data;
@@ -74,19 +91,18 @@ async function extractValue(blockHash: string, extrinsicHash: string): Promise<s
           errorInfo = dispatchError.toString();
         }
 
-        console.log(`${theExtrinsic.method.section}.${theExtrinsic.method.method}:: ExtrinsicFailed:: ${errorInfo}`);
+        data.ok = false;
+        data.msg = `${theExtrinsic.method.section}.${theExtrinsic.method.method}:: ExtrinsicFailed:: ${errorInfo}`;
       }
     });
 
-  
-    return "method: " + theExtrinsic.method.toJSON() + 
-    "signer: " + theExtrinsic.signer.toString() + 
-    "args: " + theExtrinsic.args.toString();
+    return data;
 }
 
 
 interface VercelResult {
   ok: boolean;
   msg?: string;
-  data: boolean;
+  value?: number;
+  publicKey?: string;
 }
