@@ -9,6 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@polkadot/api": "^6.11.1",
     "@polkadot/util-crypto": "^8.0.5",
     "@vercel/node": "^1.12.1",
     "ethers": "^5.5.2"
