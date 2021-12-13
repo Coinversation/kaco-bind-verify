@@ -11,16 +11,17 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   const blockHash = request.query["blockHash"];
   const extrinsicHash = request.query["extrinsicHash"];
   console.log(`${blockHash}: ${extrinsicHash}`);
+  return response.status(200).json({ok: true, data: `${blockHash}: ${extrinsicHash}`});
 
-  // Construct
-  const wsProvider = new WsProvider('wss://rpc.polkadot.io');
-  api = await ApiPromise.create({ provider: wsProvider });
+  // // Construct
+  // const wsProvider = new WsProvider('wss://rpc.polkadot.io');
+  // api = await ApiPromise.create({ provider: wsProvider });
   
-  if(blockHash && typeof blockHash === "string" && extrinsicHash && extrinsicHash === "string"){
-    await extractValue(blockHash, extrinsicHash);
-  }
+  // if(blockHash && typeof blockHash === "string" && extrinsicHash && extrinsicHash === "string"){
+  //   await extractValue(blockHash, extrinsicHash);
+  // }
 
-  return response;
+  // return response.status(200).json({ok: true, data: `${blockHash}: ${extrinsicHash}`});
 }
 
 async function extractValue(blockHash: string, extrinsicHash: string): Promise<number> { 
@@ -82,4 +83,11 @@ async function extractValue(blockHash: string, extrinsicHash: string): Promise<n
     console.log("args: " + theExtrinsic.args.toString());
     
     return 0;
+}
+
+
+interface VercelResult {
+  ok: boolean;
+  msg?: string;
+  data: boolean;
 }
