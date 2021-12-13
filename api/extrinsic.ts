@@ -8,6 +8,10 @@ var api:ApiPromise;
 var signedBlock:SignedBlock;
 
 export default async (request: VercelRequest, response: VercelResponse) => {
+  if (request.headers.authorization !== `Bearer ${process.env.VERCEL_TOKEN}`) {
+    return response.status(401).json({ ok: false });
+  }
+
   const blockHash = request.query["blockHash"];
   const extrinsicHash = request.query["extrinsicHash"];
   console.log(`${blockHash}: ${extrinsicHash}`);
