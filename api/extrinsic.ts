@@ -70,7 +70,7 @@ async function extractValue(blockHash: string, extrinsicHash: string): Promise<V
         const [dispatchInfo] = event.data;
 
         const args = theExtrinsic.args;
-        if(parseInt(args[0].toString()) === 2017){
+        if(parseInt(args[0].toString()) === 2027){
           data.ok = true;
           data.publicKey = "0x" + Buffer.from(decodeAddress(theExtrinsic.signer.toString())).toString("hex");
           data.value = parseInt(args[1].toString());
